@@ -1,0 +1,12 @@
+# 本地工具元数据（不进仓库）
+.codegraph/
+.omc/
+.omo/
+.commandcode/
+.codex/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
