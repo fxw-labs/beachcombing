@@ -1,15 +1,16 @@
-# 赶海 (beachcombing) — 潮汐与赶海攻略 skill
+# 赶海 (beachcombing) — 潮汐与赶海攻略 Skill
 
-面向中国大陆的赶海查询能力：解析"地点 + 时间 + 意向"，输出可执行的赶海计划——退潮黄金窗口、大/小潮、适用性评分、目标物种、出发清单，以及最重要的 **安全撤退截止时刻**。
+面向中国大陆沿海的专业赶海查询能力：解析"地点 + 时间 + 意向"，输出可执行的赶海计划——退潮黄金窗口、大/小潮分析、适用性评分、目标物种挖掘秘籍、出发清单，以及最重要的 **安全撤退截止时刻**。
 
 ## 这是什么
 
-一个 Claude Code skill（`SKILL.md` 为入口）+ 辅助数据与脚本。核心原则：
+一个针对 AI Agent（Claude Code / Antigravity 等）深度定制的 Skill（`SKILL.md` 为入口）+ 纯标准库辅助 CLI 与覆盖全国 11 个沿海省市（共 51 个经典点位）的赶海数据库。
 
+核心设计原则：
 - **安全线最高优先级**：撤退时刻永远置顶；大潮给红色警告；估测数据绝不伪装精确。
-- **诚实降级**：潮汐数据 `key API → 无 key 中国源 → 农历骨架`，兜底层醒目标注并压制评分。
-- **老饕语气**：报告有温度、有时令、有吃法；但安全信息严肃无歧义。
-- **评分只看潮汐**：天气展示但不计入评分。
+- **诚实降级**：潮汐数据 `商业 key API → 免费海洋海况源 → 农历半日潮四时刻骨架`，估测源严格封顶 ≤2★ 评分。
+- **老饕语气**：报告有温度、有时令、有吃法（涵盖海肠/沙虫/黄蚬子/青蟹等特色物种挖掘技巧）；安全信息严肃无歧义。
+- **评分聚焦潮汐**：适用性评分只看潮汐（潮差 + 白天黄金低潮）；天气风浪仅展示并提供安全警报，不计入打分。
 
 ## 目录结构
 
@@ -17,49 +18,76 @@
 beachcombing/
 ├── SKILL.md                 # 入口：触发词、工作流、边界、降级链路、Non-Goals
 ├── bin/
-│   └── beachcomb.py         # CLI：tide / weather / geocode（多级降级）
+│   └── beachcomb.py         # 辅助 CLI：tide / weather / geocode / ical（多级降级，零依赖）
 ├── db/
-│   ├── INDEX.md             # 省份索引（检索入口）
-│   ├── species.md           # 物种知识：滩涂类型推断、挖法、时令、吃法、方言
-│   ├── shandong.md          # 按省分区的赶海点数据（另：fujian/zhejiang/guangdong/hainan）
-│   └── …
+│   ├── INDEX.md             # 全国 11 沿海省市索引（51 处经典赶海点）
+│   ├── species.md           # 物种知识库：南北方特色渔获、挖法（盐罐/抽筒/翻石）、时令、老饕吃法
+│   ├── liaoning.md          # 辽宁：大连金石滩/夏家河子、营口、丹东（海肠/黄蚬子）
+│   ├── hebei.md             # 河北：秦皇岛浅水湾、唐山曹妃甸、沧州黄骅
+│   ├── tianjin.md           # 天津：滨海东疆港、北塘、大神堂
+│   ├── shandong.md          # 山东：青岛石老人/红岛、烟台养马岛/蓬莱、威海、日照
+│   ├── jiangsu.md           # 江苏：连云港连岛、盐城条子泥、南通如东/圆陀角（文蛤之乡）
+│   ├── shanghai.md          # 上海：奉贤渔人码头、崇明东滩、临港南汇嘴、金山嘴
+│   ├── zhejiang.md          # 浙江：舟山朱家尖、象山石浦、台州三门湾、温州洞头
+│   ├── fujian.md            # 福建：平潭岛、霞浦滩涂、福州琅岐、厦门大嶝岛
+│   ├── guangdong.md         # 广东：深圳西涌/大铲湾、汕头南澳岛、潮州汫洲、湛江硇洲岛
+│   ├── guangxi.md           # 广西：北海侨港/冠头岭、防城港万尾金滩、钦州三娘湾（沙虫）
+│   └── hainan.md            # 海南：三亚小东海、海口西海岸、文昌高隆湾、万宁石梅湾
 ├── templates/
-│   ├── report.md            # 输出报告结构
+│   ├── report.md            # 输出报告标准结构
 │   ├── point-entry.md       # 新增赶海点条目模板
 │   └── safety.md            # 撤退时刻/大潮红警/滩涂风险/合规 片段
+├── tests/
+│   └── test_beachcomb.py    # 单元测试套件（覆盖天文算法、评分、降级、CLI、日历生成）
 └── scripts/
-    └── validate_db.py       # 数据库校验（补点后运行）
+    └── validate_db.py       # 数据库严格校验（经纬度围栏、物种交叉验证、索引一致性）
 ```
 
 ## 快速使用
 
-在 Claude 对话中：
+### 1. 在 AI 对话中自然语言调用：
+- "这周六去青岛石老人赶海" → 命中 `db/shandong.md`，拉取 2026-08-15 潮汐与天气，生成完整方案与撤退时刻。
+- "大连夏家河子能挖到什么海肠吗" → 命中 `db/liaoning.md`，结合 `species.md` 给出发掘手法与时令建议。
+- "北海银滩明天什么时候退潮" → 命中 `db/guangxi.md`，计算低潮时刻与黄金赶海窗口。
 
-- "这周六去青岛赶海" → 解析地点时间，查 `db/INDEX.md` → 读取 `db/shandong.md` 对应点 → 调 CLI 拉潮汐/天气 → 生成报告。
-- "厦门西海岸能挖到什么" → 未命中内置库则 geocode，按滩涂类型推断物种。
-- "三亚的后天退潮什么时候" → 直接给目标时段。
-
-CLI 可独立调用：
-
+### 2. 独立调用 CLI 工具：
 ```bash
-python3 bin/beachcomb.py tide <lat> <lon> 2026-08-15
-python3 bin/beachcomb.py weather <lat> <lon> 2026-08-15
-python3 bin/beachcomb.py geocode 青岛
+# 查询潮汐（返回高低潮四时刻、大潮状态、昼夜黄金窗口及评分）
+python3 bin/beachcomb.py tide 36.09 120.47 2026-08-15
+
+# 查询天气与风浪预警
+python3 bin/beachcomb.py weather 36.09 120.47 2026-08-15
+
+# 中文沿海地理编码
+python3 bin/beachcomb.py geocode 青岛石老人
+
+# 导出 .ics 赶海日历提醒
+python3 bin/beachcomb.py ical 2026-08-15 14:11 "青岛石老人赶海" "石老人海滩"
 ```
 
-可选增强：设置 `BEACHCOMB_TIDE_API=<key>`（WorldTides/Storm Glass）走精确潮汐链路；否则自动降级为农历骨架（醒目标注、评分 ≤2★）。
+## 测试与校验
+
+本项目坚持 **零第三方依赖（stdlib only）**，开箱即用：
+
+```bash
+# 运行单元测试
+python3 -m unittest discover tests
+
+# 校验全国 11 省数据库一致性
+python3 scripts/validate_db.py
+```
 
 ## 如何贡献赶海点
 
-1. 复制 `templates/point-entry.md` 到对应省文件 `db/<province>.md`；
-2. 按模板填真实信息；
-3. 更新 `db/INDEX.md` 的数量与代表点登记；
-4. 运行 `python3 scripts/validate_db.py` 确认通过。
+1. 复制 `templates/point-entry.md` 到对应省份文件 `db/<province>.md`；
+2. 按模板填写真实坐标、滩涂类型、目标物种与到达指引；
+3. 更新 `db/INDEX.md` 的点位数量与代表点登记；
+4. 运行 `python3 scripts/validate_db.py` 确保 100% 通过。
 
-## Non-Goals（v1）
+## Non-Goals（v1 明确不做）
 
-钓鱼预报 / 冲浪·潜水海况 / 生物影像识别 / 精细法律核对。被问及时坦率说明能力范围。
+钓鱼预报 / 冲浪·深潜海况 / 生物图像识别 / 精细法律边界核对。被问及时坦率说明能力范围。
 
-## 免责
+## 免责声明
 
-本 skill 提供辅助信息，不构成法律或安全建议。**出海赶海务必：结伴 · 看官方潮汐表 · 涨潮前撤离 · 远离陌生滩涂。**
+本 Skill 提供辅助信息，不构成法律或安全建议。**出海赶海务必：结伴同行 · 看官方潮汐表 · 涨潮前及时撤离 · 远离陌生深泥与险礁。**
