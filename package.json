@@ -1,0 +1,27 @@
+{
+  "name": "beachcombing",
+  "version": "1.0.0",
+  "description": "中国沿海赶海潮汐与攻略查询 Agent Skill",
+  "main": "bin/beachcomb.py",
+  "keywords": [
+    "skill",
+    "skills",
+    "agent-skill",
+    "claude-code",
+    "beachcombing",
+    "tide",
+    "tides",
+    "weather",
+    "marine"
+  ],
+  "author": "fxw-labs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fxw-labs/beachcombing.git"
+  },
+  "scripts": {
+    "test": "python3 -m unittest discover tests",
+    "validate": "python3 scripts/validate_db.py"
+  }
+}

@@ -2,9 +2,23 @@
 
 面向中国大陆沿海的专业赶海查询能力：解析"地点 + 时间 + 意向"，输出可执行的赶海计划——退潮黄金窗口、大/小潮分析、适用性评分、目标物种挖掘秘籍、出发清单，以及最重要的 **安全撤退截止时刻**。
 
+## 📦 一键安装 (Installation via `npx skills`)
+
+支持 **Claude Code**、**Cursor**、**Codex**、**Antigravity** 等所有兼容 Agent Skills 规范的 AI 工具：
+
+```bash
+# 为当前项目一键安装
+npx skills add fxw-labs/beachcombing
+
+# 全局安装（所有项目通用）
+npx skills add fxw-labs/beachcombing -g
+```
+
+---
+
 ## 这是什么
 
-一个针对 AI Agent（Claude Code / Antigravity 等）深度定制的 Skill（`SKILL.md` 为入口）+ 纯标准库辅助 CLI 与覆盖全国 11 个沿海省市（共 51 个经典点位）的赶海数据库。
+一个针对 AI Agent 深度定制的 Skill（`SKILL.md` 为入口）+ 纯标准库辅助 CLI 与覆盖全国 11 个沿海省市（共 54 处经典点位）的赶海数据库。
 
 核心设计原则：
 - **安全线最高优先级**：撤退时刻永远置顶；大潮给红色警告；估测数据绝不伪装精确。
@@ -17,15 +31,16 @@
 ```
 beachcombing/
 ├── SKILL.md                 # 入口：触发词、工作流、边界、降级链路、Non-Goals
+├── package.json             # npx skills / npm 元数据规范
 ├── bin/
 │   └── beachcomb.py         # 辅助 CLI：tide / weather / geocode / ical（多级降级，零依赖）
 ├── db/
-│   ├── INDEX.md             # 全国 11 沿海省市索引（51 处经典赶海点）
+│   ├── INDEX.md             # 全国 11 沿海省市索引（54 处经典赶海点）
 │   ├── species.md           # 物种知识库：南北方特色渔获、挖法（盐罐/抽筒/翻石）、时令、老饕吃法
 │   ├── liaoning.md          # 辽宁：大连金石滩/夏家河子、营口、丹东（海肠/黄蚬子）
 │   ├── hebei.md             # 河北：秦皇岛浅水湾、唐山曹妃甸、沧州黄骅
 │   ├── tianjin.md           # 天津：滨海东疆港、北塘、大神堂
-│   ├── shandong.md          # 山东：青岛石老人/红岛、烟台养马岛/蓬莱、威海、日照
+│   ├── shandong.md          # 山东：青岛石老人/红岛/金沙滩/红石崖/城市阳台、烟台、威海、日照
 │   ├── jiangsu.md           # 江苏：连云港连岛、盐城条子泥、南通如东/圆陀角（文蛤之乡）
 │   ├── shanghai.md          # 上海：奉贤渔人码头、崇明东滩、临港南汇嘴、金山嘴
 │   ├── zhejiang.md          # 浙江：舟山朱家尖、象山石浦、台州三门湾、温州洞头
@@ -46,7 +61,7 @@ beachcombing/
 ## 快速使用
 
 ### 1. 在 AI 对话中自然语言调用：
-- "这周六去青岛石老人赶海" → 命中 `db/shandong.md`，拉取 2026-08-15 潮汐与天气，生成完整方案与撤退时刻。
+- "这周六去青岛石老人赶海" → 命中 `db/shandong.md`，拉取潮汐与天气，生成完整方案与撤退时刻。
 - "大连夏家河子能挖到什么海肠吗" → 命中 `db/liaoning.md`，结合 `species.md` 给出发掘手法与时令建议。
 - "北海银滩明天什么时候退潮" → 命中 `db/guangxi.md`，计算低潮时刻与黄金赶海窗口。
 
